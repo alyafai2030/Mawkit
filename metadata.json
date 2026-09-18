@@ -1,0 +1,6 @@
+{
+  "name": "مواقيت الصلاة والآذان",
+  "description": "تطبيق مواقيت الصلاة والتقويم الهجري وأوقات الأذان والإقامة لجميع المدن والدول بدقة فلكية عالية",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+@theme {
+  --font-amiri: 'Amiri', serif;
+  --font-tajawal: 'Tajawal', sans-serif;
+  --font-cairo: 'Cairo', sans-serif;
+  --font-numbers: 'Plus Jakarta Sans', 'Tajawal', sans-serif;
+}
+
+@keyframes activePrayerPulse {
+  0%, 100% {
+    border-color: rgba(245, 215, 158, 0.7);
+    box-shadow: 0 0 18px rgba(245, 215, 158, 0.35), inset 0 0 10px rgba(245, 215, 158, 0.15);
+  }
+  50% {
+    border-color: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 0 28px rgba(245, 215, 158, 0.65), inset 0 0 16px rgba(245, 215, 158, 0.3);
+  }
+}
+
+.active-capsule {
+  animation: activePrayerPulse 3s infinite ease-in-out;
+  border-color: rgba(245, 215, 158, 0.9) !important;
+  background: rgba(0, 0, 0, 0.45) !important;
+}
+
+.custom-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: rgba(245, 215, 158, 0.4);
+  border-radius: 4px;
+}
+.custom-scroll::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
