@@ -115,13 +115,19 @@ class SafeAudioEngine {
       this.adhanVoices.find((v) => v.id === voiceId) ||
       this.adhanVoices[0]; // defaults to Sheikh Hamad Al-Daghreeri
 
+    const rawUrl = voice?.url || '/audio/adhan_daghreeri.mp3';
+    // Support relative base path for subfolder deployments like GitHub Pages
+    const resolvedUrl = rawUrl.startsWith('/') && import.meta.env.BASE_URL
+      ? `${import.meta.env.BASE_URL.replace(/\/$/, '')}${rawUrl}`
+      : rawUrl;
+
     if (voice && voice.url) {
       this.isCurrentlyPlaying = true;
       if (onStart) onStart();
       if (onEnd) this.onEndCallbacks.push(onEnd);
 
       try {
-        const audio = new Audio(voice.url);
+        const audio = new Audio(resolvedUrl);
         audio.volume = Math.max(0, Math.min(1, volume));
         this.activeHtmlAudio = audio;
 
