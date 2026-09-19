@@ -21,6 +21,8 @@ import {
   Play,
   Square,
   Crosshair,
+  CheckCircle2,
+  ExternalLink,
 } from 'lucide-react';
 
 interface SettingsModalProps {
@@ -353,6 +355,39 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <span>تحديد موقعي تلقائياً (GPS)</span>
                 </button>
               </div>
+
+              {/* Official Bahrain Calendar 1448 H Supreme Council Certification Card */}
+              {(settings.country === 'BH' || settings.calcMethod === 'bahrain') && (
+                <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-400/30 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center shrink-0 mt-0.5">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-300" />
+                  </div>
+                  <div className="flex-1 space-y-1.5 text-xs">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <span className="font-bold text-emerald-300 text-sm">
+                        معتمد رسمياً: التقويم البحريني 1448 هـ
+                      </span>
+                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 font-medium">
+                        المجلس الأعلى للشؤون الإسلامية
+                      </span>
+                    </div>
+                    <p className="text-emerald-100/80 leading-relaxed font-tajawal">
+                      يتم احتساب مواقيت الصلوات بدقة فلكية متطابقة مع وثيقة روزنامة الزبارة والبحرين الصادرة عن اللجنة العليا للتقويم البحريني، بالمعيار المزدوج لموقعي المملكة (دلمونيا بالمحرق للفجر والشروق، ومدينة سلمان لبقية الصلوات، وزاوية 18° للعشاء).
+                    </p>
+                    <div className="pt-1">
+                      <a
+                        href="https://www.almajles.gov.bh/MediaManager/Media/Documents/taqweem1448/taqweem/CalendarDaily1448Final.pdf"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-amber-300 hover:text-amber-200 underline font-medium text-[11px] transition-colors"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>فتح وثيقة التقويم اليومي الرسمي لعام 1448 هـ (CalendarDaily1448Final.pdf)</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
