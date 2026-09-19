@@ -277,7 +277,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   >
                     {cities.map((city) => (
                       <option key={city.name} value={city.name}>
-                        {city.isOfficialAwqaf ? `${city.name} (تقويم الأوقاف الرسمي)` : city.name}
+                        {city.isOfficialAwqaf ? `${city.name} (تقويم الأوقاف الرسمي Manama-awqaf)` : city.name}
                       </option>
                     ))}
                   </select>
@@ -297,7 +297,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     className="w-full bg-stone-800/80 border border-white/15 rounded-xl px-3 py-2 text-slate-200 text-xs focus:outline-none focus:border-amber-400 font-tajawal cursor-pointer"
                   >
                     <option value="auto">تلقائي (حسب الدولة المحددة)</option>
-                    <option value="bahrain">أوقاف مملكة البحرين (التقويم المعتمد)</option>
+                    <option value="bahrain">أوقاف مملكة البحرين (Manama-awqaf / تقويم الزبارة الرسمي)</option>
                     <option value="makkah">أم القرى - مكة المكرمة (السعودية والخليج)</option>
                     <option value="egypt">الهيئة العامة المصرية للمساحة</option>
                     <option value="karachi">جامعة العلوم الإسلامية بكراتشي</option>

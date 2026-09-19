@@ -123,25 +123,32 @@ export default function App() {
       const cityObj =
         countryObj.cities.find((city) => city.name === settings.city) || countryObj.cities[0];
 
-      // Official Manama Awqaf priority
-      if (settings.country === 'BH' && (!settings.city || settings.city === 'المنامة')) {
+      // Official Kingdom of Bahrain Awqaf calculation (Manama-awqaf / Zubara calendar)
+      const isBahrainAwqaf =
+        settings.country === 'BH' ||
+        settings.calcMethod === 'bahrain' ||
+        cityObj.isOfficialAwqaf;
+
+      if (isBahrainAwqaf) {
         const mm = pad(date.getMonth() + 1);
         const dd = pad(date.getDate());
         const key = `${mm}-${dd}`;
-        const raw = MANAMA_AWQAF_DATA[key] || '04:06|05:23|11:34|15:00|17:41|18:57';
-        const [fajr, sunrise, dhuhr, asr, maghrib, isha] = raw.split('|');
+        const raw = MANAMA_AWQAF_DATA[key];
+        if (raw) {
+          const [fajr, sunrise, dhuhr, asr, maghrib, isha] = raw.split('|');
 
-        const tomorrow = new Date(date.getTime() + 86400000);
-        const tkey = `${pad(tomorrow.getMonth() + 1)}-${pad(tomorrow.getDate())}`;
-        const traw = MANAMA_AWQAF_DATA[tkey] || raw;
-        const tomorrowFajr = traw.split('|')[0];
+          const tomorrow = new Date(date.getTime() + 86400000);
+          const tkey = `${pad(tomorrow.getMonth() + 1)}-${pad(tomorrow.getDate())}`;
+          const traw = MANAMA_AWQAF_DATA[tkey] || raw;
+          const tomorrowFajr = traw.split('|')[0];
 
-        // Duha calculation (approx 15 min after sunrise)
-        const sunriseSec = timeToSeconds(sunrise);
-        const duhaSec = sunriseSec + 15 * 60;
-        const duha = `${pad(Math.floor(duhaSec / 3600))}:${pad(Math.floor((duhaSec % 3600) / 60))}`;
+          // Duha calculation (approx 15 min after sunrise)
+          const sunriseSec = timeToSeconds(sunrise);
+          const duhaSec = sunriseSec + 15 * 60;
+          const duha = `${pad(Math.floor(duhaSec / 3600))}:${pad(Math.floor((duhaSec % 3600) / 60))}`;
 
-        return { fajr, sunrise, duha, dhuhr, asr, maghrib, isha, tomorrowFajr };
+          return { fajr, sunrise, duha, dhuhr, asr, maghrib, isha, tomorrowFajr };
+        }
       }
 
       // Universal Astronomical calculation for any city worldwide
