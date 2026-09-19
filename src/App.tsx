@@ -456,7 +456,7 @@ export default function App() {
       />
 
       {/* 2. Main Content Container (Refined 100% match to w1.png layout) */}
-      <div className="relative z-10 w-full max-w-md mx-auto px-4 py-3 flex-1 flex flex-col justify-between">
+      <div className="relative z-10 w-full max-w-md mx-auto px-4 pt-safe pb-safe flex-1 flex flex-col justify-between">
         {/* A. Top Bar Header */}
         <Header
           cityName={currentCityName}

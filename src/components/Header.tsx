@@ -24,7 +24,7 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleFullscreen,
 }) => {
   return (
-    <header className="w-full flex items-center justify-between pt-1 pb-2 font-tajawal select-none">
+    <header className="w-full flex items-center justify-between pt-3 sm:pt-4 pb-2 mb-1 sm:mb-2 font-tajawal select-none">
       {/* Left: Menu Button & Quick Theme Palette Switcher */}
       <div className="flex items-center gap-2">
         <button

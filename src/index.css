@@ -7,6 +7,14 @@
   --font-numbers: 'Plus Jakarta Sans', 'Tajawal', sans-serif;
 }
 
+/* iOS Safe Area Insets Support (iPhone Dynamic Island & Notch) */
+.pt-safe {
+  padding-top: max(env(safe-area-inset-top, 0px), 16px);
+}
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px);
+}
+
 @keyframes activePrayerPulse {
   0%, 100% {
     border-color: rgba(245, 215, 158, 0.7);
