@@ -37,6 +37,7 @@ export interface Country {
 export type CalcMethodId =
   | 'auto'
   | 'bahrain'
+  | 'bh.manama.awqaf'
   | 'makkah'
   | 'egypt'
   | 'karachi'

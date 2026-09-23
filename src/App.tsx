@@ -123,10 +123,11 @@ export default function App() {
       const cityObj =
         countryObj.cities.find((city) => city.name === settings.city) || countryObj.cities[0];
 
-      // Official Kingdom of Bahrain Awqaf calculation (Manama-awqaf / Zubara calendar)
+      // Official Kingdom of Bahrain Awqaf calculation (bh.manama.awqaf / Zubara calendar)
       const isBahrainAwqaf =
         settings.country === 'BH' ||
         settings.calcMethod === 'bahrain' ||
+        settings.calcMethod === 'bh.manama.awqaf' ||
         cityObj.isOfficialAwqaf;
 
       if (isBahrainAwqaf) {

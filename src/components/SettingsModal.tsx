@@ -299,7 +299,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     className="w-full bg-stone-800/80 border border-white/15 rounded-xl px-3 py-2 text-slate-200 text-xs focus:outline-none focus:border-amber-400 font-tajawal cursor-pointer"
                   >
                     <option value="auto">تلقائي (حسب الدولة المحددة)</option>
-                    <option value="bahrain">أوقاف مملكة البحرين (Manama-awqaf / تقويم الزبارة الرسمي)</option>
+                    <option value="bh.manama.awqaf">أوقاف مملكة البحرين (bh.manama.awqaf - رزنامة الزبارة الرسمية)</option>
+                    <option value="bahrain">تقويم مملكة البحرين (المجلس الأعلى للشؤون الإسلامية)</option>
                     <option value="makkah">أم القرى - مكة المكرمة (السعودية والخليج)</option>
                     <option value="egypt">الهيئة العامة المصرية للمساحة</option>
                     <option value="karachi">جامعة العلوم الإسلامية بكراتشي</option>
@@ -357,7 +358,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
 
               {/* Official Bahrain Calendar 1448 H Supreme Council Certification Card */}
-              {(settings.country === 'BH' || settings.calcMethod === 'bahrain') && (
+              {(settings.country === 'BH' || settings.calcMethod === 'bahrain' || settings.calcMethod === 'bh.manama.awqaf') && (
                 <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-400/30 flex items-start gap-3">
                   <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center shrink-0 mt-0.5">
                     <CheckCircle2 className="w-5 h-5 text-emerald-300" />
@@ -365,14 +366,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <div className="flex-1 space-y-1.5 text-xs">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <span className="font-bold text-emerald-300 text-sm">
-                        معتمد رسمياً: التقويم البحريني 1448 هـ
+                        معتمد رسمياً: bh.manama.awqaf (رزنامة الزبارة 1448 هـ)
                       </span>
                       <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 font-medium">
                         المجلس الأعلى للشؤون الإسلامية
                       </span>
                     </div>
                     <p className="text-emerald-100/80 leading-relaxed font-tajawal">
-                      يتم احتساب مواقيت الصلوات بدقة فلكية متطابقة مع وثيقة روزنامة الزبارة والبحرين الصادرة عن اللجنة العليا للتقويم البحريني، بالمعيار المزدوج لموقعي المملكة (دلمونيا بالمحرق للفجر والشروق، ومدينة سلمان لبقية الصلوات، وزاوية 18° للعشاء).
+                      يتم احتساب مواقيت الصلوات بدقة فلكية متطابقة مع معيار <span className="font-mono text-amber-300">bh.manama.awqaf</span> ووثيقة روزنامة الزبارة والبحرين الرسمية الصادرة عن المجلس الأعلى للشؤون الإسلامية، بالمعيار المزدوج لموقعي المملكة (دلمونيا بالمحرق للفجر والشروق، ومدينة سلمان لبقية الصلوات، وزاوية 18° للعشاء).
                     </p>
                     <div className="pt-1">
                       <a

@@ -111,7 +111,8 @@ interface MethodParams {
 }
 
 const CALC_METHODS: Record<string, MethodParams> = {
-  bahrain: { fajrAngle: 18.0, ishaAngle: 18.0 },
+  bahrain: { fajrAngle: 18.0, ishaAngle: 17.7 },
+  'bh.manama.awqaf': { fajrAngle: 18.0, ishaAngle: 17.7 },
   makkah: { fajrAngle: 18.5, ishaAngle: 0, ishaIntervalMinutes: 90 },
   egypt: { fajrAngle: 19.5, ishaAngle: 17.5 },
   karachi: { fajrAngle: 18.0, ishaAngle: 18.0 },
@@ -308,7 +309,7 @@ export const WORLD_COUNTRIES: Country[] = [
     name: 'مملكة البحرين',
     flag: '🇧🇭',
     timezone: 3,
-    defaultMethod: 'bahrain',
+    defaultMethod: 'bh.manama.awqaf',
     cities: [
       { name: 'المنامة', lat: 26.2285, lng: 50.586, isOfficialAwqaf: true },
       { name: 'المحرق', lat: 26.2572, lng: 50.6119, isOfficialAwqaf: true },
