@@ -11,6 +11,7 @@ interface HeaderProps {
   onCycleTheme: () => void;
   onToggleSound: () => void;
   onToggleFullscreen: () => void;
+  onOpenAdhkar?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -26,7 +27,7 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="w-full flex items-center justify-between pt-3 sm:pt-4 pb-2 mb-1 sm:mb-2 font-tajawal select-none">
       {/* Left: Menu Button & Quick Theme Palette Switcher */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 sm:gap-2">
         <button
           id="btn-open-menu"
           type="button"
@@ -82,7 +83,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Right: Quick Sound Toggle & Fullscreen Button */}
+      {/* Right: Sound Toggle & Fullscreen Button */}
       <div className="flex items-center gap-1.5">
         <button
           id="btn-quick-sound"

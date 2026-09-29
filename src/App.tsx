@@ -23,6 +23,7 @@ import { IqamaModal } from './components/IqamaModal';
 import { BlackScreenOverlay } from './components/BlackScreenOverlay';
 import { SettingsModal } from './components/SettingsModal';
 import { SingleHtmlModal } from './components/SingleHtmlModal';
+import { AdhkarModal } from './components/AdhkarModal';
 import { STANDALONE_HTML_CODE } from './data/standaloneHtmlCode';
 
 const STORAGE_KEY = 'PRAYER_TIMES_APP_SETTINGS_V2';
@@ -100,6 +101,8 @@ export default function App() {
   // Modals state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSingleHtmlOpen, setIsSingleHtmlOpen] = useState(false);
+  const [isAdhkarOpen, setIsAdhkarOpen] = useState(false);
+  const [adhkarInitialTab, setAdhkarInitialTab] = useState<'morning' | 'evening' | 'post_prayer' | 'tasbeeh'>('morning');
   const [activeSettingsTab, setActiveSettingsTab] = useState('location');
   const [isIqamaModalOpen, setIsIqamaModalOpen] = useState(false);
   const [isBlackScreenOpen, setIsBlackScreenOpen] = useState(false);
@@ -394,6 +397,7 @@ export default function App() {
         setIsSettingsOpen(false);
         setIsIqamaModalOpen(false);
         setIsBlackScreenOpen(false);
+        setIsAdhkarOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -485,6 +489,10 @@ export default function App() {
             if (!newSound) audioEngine.stopAllAudio();
           }}
           onToggleFullscreen={toggleFullscreen}
+          onOpenAdhkar={() => {
+            setAdhkarInitialTab(curSec < 15 * 3600 ? 'morning' : 'evening');
+            setIsAdhkarOpen(true);
+          }}
         />
 
         {/* B. Date & Large Digital Clock & Quranic Verse */}
@@ -522,7 +530,7 @@ export default function App() {
         {/* D. Prayer Times Stadium Capsules Table */}
         <PrayerTable prayers={prayersTableData} useArabicDigits={settings.arabicDigits} />
 
-        {/* E. Subtle Footer */}
+        {/* F. Subtle Footer */}
         <footer className="w-full flex items-center justify-between text-xs font-amiri text-[#fae084]/80 px-2 pt-2 select-none">
           <span
             id="footer-theme-name"
@@ -534,6 +542,21 @@ export default function App() {
           >
             الخلفية: {currentTheme.name} 🎨
           </span>
+
+          <button
+            id="footer-adhkar-link"
+            type="button"
+            className="cursor-pointer text-amber-300 font-bold flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 hover:border-amber-400/50 transition-all active:scale-95"
+            onClick={() => {
+              setAdhkarInitialTab(curSec < 15 * 3600 ? 'morning' : 'evening');
+              setIsAdhkarOpen(true);
+            }}
+            title="فتح أذكار الصباح والمساء والسبحة"
+          >
+            <span>📿</span>
+            <span>الأذكار والتسابيح</span>
+          </button>
+
           <span
             id="footer-location-text"
             className="cursor-pointer hover:underline"
@@ -601,6 +624,11 @@ export default function App() {
           setIsBlackScreenOpen(true);
         }}
         onToggleFullscreen={toggleFullscreen}
+        onOpenAdhkar={() => {
+          setIsSettingsOpen(false);
+          setAdhkarInitialTab(curSec < 15 * 3600 ? 'morning' : 'evening');
+          setIsAdhkarOpen(true);
+        }}
       />
 
       {/* 6. Single HTML Code Modal */}
@@ -608,6 +636,14 @@ export default function App() {
         isOpen={isSingleHtmlOpen}
         onClose={() => setIsSingleHtmlOpen(false)}
         htmlCode={STANDALONE_HTML_CODE}
+      />
+
+      {/* 7. Adhkar & Supplications Modal */}
+      <AdhkarModal
+        isOpen={isAdhkarOpen}
+        initialTab={adhkarInitialTab}
+        useArabicDigits={settings.arabicDigits}
+        onClose={() => setIsAdhkarOpen(false)}
       />
     </div>
   );

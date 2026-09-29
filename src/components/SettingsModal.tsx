@@ -23,6 +23,7 @@ import {
   Crosshair,
   CheckCircle2,
   ExternalLink,
+  BookOpen,
 } from 'lucide-react';
 
 interface SettingsModalProps {
@@ -36,6 +37,7 @@ interface SettingsModalProps {
   onTriggerIqamaTest: () => void;
   onTriggerBlackScreenTest: () => void;
   onToggleFullscreen: () => void;
+  onOpenAdhkar?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -49,6 +51,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onTriggerIqamaTest,
   onTriggerBlackScreenTest,
   onToggleFullscreen,
+  onOpenAdhkar,
 }) => {
   const [gpsStatus, setGpsStatus] = useState<string>('');
   const [isPlayingAdhan, setIsPlayingAdhan] = useState(false);
@@ -150,6 +153,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   const tabs = [
     { id: 'location', label: 'الدولة والمدينة', icon: MapPin },
+    { id: 'adhkar', label: 'الأذكار والتسابيح', icon: BookOpen },
     { id: 'audio', label: 'صوت الأذان والإقامة', icon: Volume2 },
     { id: 'themes', label: 'الثيمات (18)', icon: Palette },
     { id: 'options', label: 'الخيارات العامة', icon: Settings },
@@ -833,6 +837,36 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               >
                 تجربة الشاشة السوداء الآن 📵
               </button>
+            </div>
+          )}
+
+          {/* TAB: ADHKAR & TASBEEH SHORTCUT */}
+          {activeTab === 'adhkar' && (
+            <div id="tab-adhkar" className="space-y-5 text-center py-4">
+              <div className="w-16 h-16 rounded-3xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center mx-auto shadow-inner text-amber-300">
+                <BookOpen className="w-8 h-8" />
+              </div>
+              <div className="max-w-md mx-auto">
+                <h3 className="text-xl font-bold font-amiri text-[#f5d79e] mb-1">
+                  أذكار الصباح والمساء والسبحة الإلكترونية
+                </h3>
+                <p className="text-xs text-slate-300 leading-relaxed font-tajawal">
+                  تضم حصن المسلم الموثق: أذكار الصباح، أذكار المساء، الأذكار عقب الصلوات المفروضة، وسبحة إلكترونية رقمية مع عداد الأهداف وحفظ الإنجاز اليومي.
+                </p>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    if (onOpenAdhkar) onOpenAdhkar();
+                  }}
+                  className="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold font-tajawal text-sm shadow-lg shadow-amber-500/20 transition-all active:scale-95 cursor-pointer"
+                >
+                  فتح شاشة الأذكار والتسابيح الآن 📖
+                </button>
+              </div>
             </div>
           )}
         </div>

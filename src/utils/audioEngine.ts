@@ -98,6 +98,93 @@ class SafeAudioEngine {
     }
   }
 
+  // Gentle tactile click sound for Tasbeeh counter
+  public playTasbeehClick(volume = 0.5): void {
+    const ctx = this.getAudioContext();
+    if (!ctx) return;
+
+    try {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, now);
+      osc.frequency.exponentialRampToValueAtTime(440, now + 0.04);
+
+      const noteVol = Math.max(0, Math.min(1, volume * 0.18));
+      gain.gain.setValueAtTime(noteVol, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.05);
+    } catch (e) {
+      console.warn('Tasbeeh click error:', e);
+    }
+  }
+
+  // Celebratory gentle chime when a dhikr or target is completed
+  public playTasbeehFinish(volume = 0.7): void {
+    const ctx = this.getAudioContext();
+    if (!ctx) return;
+
+    try {
+      const now = ctx.currentTime;
+      const freqs = [659.25, 783.99, 1046.5]; // E5, G5, C6
+      freqs.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.1);
+
+        const noteVol = Math.max(0, Math.min(1, volume * 0.22));
+        gain.gain.setValueAtTime(0.0001, now + idx * 0.1);
+        gain.gain.exponentialRampToValueAtTime(noteVol, now + idx * 0.1 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.1 + 0.5);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now + idx * 0.1);
+        osc.stop(now + idx * 0.1 + 0.55);
+      });
+    } catch (e) {
+      console.warn('Tasbeeh finish chime error:', e);
+    }
+  }
+
+  // Gentle swipe/page turn sound for card transitions
+  public playSwipe(volume = 0.3): void {
+    const ctx = this.getAudioContext();
+    if (!ctx) return;
+
+    try {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(320, now);
+      osc.frequency.exponentialRampToValueAtTime(540, now + 0.05);
+
+      const noteVol = Math.max(0, Math.min(1, volume * 0.12));
+      gain.gain.setValueAtTime(noteVol, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.07);
+    } catch (e) {
+      console.warn('Swipe sound error:', e);
+    }
+  }
+
   /**
    * Main Adhan playback method:
    * Uses real studio audio MP3 (with Sheikh Hamad Al-Daghreeri as default)
