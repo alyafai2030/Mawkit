@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   RotateCcw,
   Volume2,
-  VolumeX,
   Copy,
   Check,
   Sparkles,
@@ -37,7 +36,6 @@ import {
   TASBEEH_PRESETS,
   TasbeehPreset,
 } from '../data/adhkarData';
-import { audioEngine } from '../utils/audioEngine';
 import { formatDigits } from '../utils/astronomicalPrayer';
 
 interface AdhkarModalProps {
@@ -69,15 +67,13 @@ export const AdhkarModal: React.FC<AdhkarModalProps> = ({
   const [activeTab, setActiveTab] = useState<TabType>(defaultTab);
   const [viewMode, setViewMode] = useState<ViewMode>('card'); // Default to iPhone Card mode
   const [currentIndex, setCurrentIndex] = useState<number>(0);
-  const [slideDirection, setSlideDirection] = useState<'next' | 'prev' | null>(null);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [isVibrating, setIsVibrating] = useState(false);
   const [isIndexDrawerOpen, setIsIndexDrawerOpen] = useState(false);
   const [isSettingsDrawerOpen, setIsSettingsDrawerOpen] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
 
   // Settings
   const [autoAdvance, setAutoAdvance] = useState(true);
-  const [soundEnabled, setSoundEnabled] = useState(true);
   const [vibrationEnabled, setVibrationEnabled] = useState(true);
   const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xlarge'>('large');
   const [searchQuery, setSearchQuery] = useState('');
@@ -182,69 +178,80 @@ export const AdhkarModal: React.FC<AdhkarModalProps> = ({
   const progressPercent = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
   const isAllCompleted = totalItems > 0 && completedItems === totalItems;
 
-  // Haptic feedback helper
+  // Haptic feedback helper on phones (replaces sound)
   const triggerHaptic = useCallback(
-    (type: 'light' | 'medium' | 'success' = 'light') => {
-      if (!vibrationEnabled || typeof window === 'undefined' || !navigator.vibrate) return;
+    (type: 'light' | 'medium' | 'success' | 'transition' | 'celebration' = 'light') => {
+      if (!vibrationEnabled || typeof window === 'undefined') return;
       try {
-        if (type === 'light') {
-          navigator.vibrate(15);
-        } else if (type === 'medium') {
-          navigator.vibrate(30);
-        } else {
-          navigator.vibrate([35, 60, 35]);
+        if (navigator.vibrate) {
+          if (type === 'light') {
+            // Snappy tap for counting
+            navigator.vibrate(20);
+          } else if (type === 'medium') {
+            navigator.vibrate(35);
+          } else if (type === 'transition') {
+            // Distinct haptic vibration pattern for moving to the next dhikr
+            navigator.vibrate([40, 50, 40]);
+          } else if (type === 'celebration') {
+            // Rich celebratory vibration upon completing all adhkar
+            navigator.vibrate([60, 50, 60, 50, 120]);
+          } else {
+            // Completion of single dhikr count
+            navigator.vibrate([40, 60, 40]);
+          }
         }
       } catch {}
     },
     [vibrationEnabled]
   );
 
-  // Transition to Next Dhikr
+  // Transition to Next Dhikr with Vibration
   const handleNextDhikr = useCallback(() => {
-    if (isAnimating || currentList.length === 0) return;
+    if (currentList.length === 0) return;
     if (currentIndex < currentList.length - 1) {
-      setSlideDirection('next');
-      setIsAnimating(true);
-      if (soundEnabled) audioEngine.playSwipe(0.25);
-      triggerHaptic('light');
+      // Trigger haptic vibration on moving to the next Dhikr
+      triggerHaptic('transition');
+      setIsVibrating(true);
+      setCurrentIndex((prev) => prev + 1);
 
       setTimeout(() => {
-        setCurrentIndex((prev) => prev + 1);
-        setSlideDirection(null);
-        setIsAnimating(false);
-      }, 180);
+        setIsVibrating(false);
+      }, 220);
     } else {
       // Reached the end
       if (completedItems >= totalItems) {
         setShowCelebration(true);
+        triggerHaptic('celebration');
       }
     }
-  }, [currentIndex, currentList.length, isAnimating, completedItems, totalItems, soundEnabled, triggerHaptic]);
+  }, [currentIndex, currentList.length, completedItems, totalItems, triggerHaptic]);
 
-  // Transition to Previous Dhikr
+  // Transition to Previous Dhikr with Vibration
   const handlePrevDhikr = useCallback(() => {
-    if (isAnimating || currentList.length === 0) return;
+    if (currentList.length === 0) return;
     if (currentIndex > 0) {
-      setSlideDirection('prev');
-      setIsAnimating(true);
-      if (soundEnabled) audioEngine.playSwipe(0.25);
-      triggerHaptic('light');
+      triggerHaptic('transition');
+      setIsVibrating(true);
+      setCurrentIndex((prev) => prev - 1);
 
       setTimeout(() => {
-        setCurrentIndex((prev) => prev - 1);
-        setSlideDirection(null);
-        setIsAnimating(false);
-      }, 180);
+        setIsVibrating(false);
+      }, 220);
     }
-  }, [currentIndex, currentList.length, isAnimating, soundEnabled, triggerHaptic]);
+  }, [currentIndex, currentList.length, triggerHaptic]);
 
   // Jump directly to specific dhikr index
   const handleJumpToIndex = (index: number) => {
     if (index >= 0 && index < currentList.length) {
+      triggerHaptic('transition');
+      setIsVibrating(true);
       setCurrentIndex(index);
       setIsIndexDrawerOpen(false);
       setShowCelebration(false);
-      triggerHaptic('light');
+
+      setTimeout(() => {
+        setIsVibrating(false);
+      }, 220);
     }
   };
 
@@ -270,14 +277,7 @@ export const AdhkarModal: React.FC<AdhkarModalProps> = ({
 
     const isNowFinished = next >= item.count;
 
-    if (soundEnabled) {
-      if (isNowFinished) {
-        audioEngine.playTasbeehFinish(0.75);
-      } else {
-        audioEngine.playTasbeehClick(0.45);
-      }
-    }
-
+    // Haptic vibration replaces sound on phones
     triggerHaptic(isNowFinished ? 'success' : 'light');
 
     // Auto-advance to next Dhikr if enabled!
@@ -286,10 +286,11 @@ export const AdhkarModal: React.FC<AdhkarModalProps> = ({
         if (currentIndex < currentList.length - 1) {
           handleNextDhikr();
         } else {
-          // Final dhikr completed: show celebration!
+          // Final dhikr completed: show celebration and vibrate!
           setShowCelebration(true);
+          triggerHaptic('celebration');
         }
-      }, 360);
+      }, 260);
     }
   };
 
@@ -467,17 +468,15 @@ export const AdhkarModal: React.FC<AdhkarModalProps> = ({
     onClose,
   ]);
 
-  // Tasbeeh methods
+  // Tasbeeh methods (vibration replaces sound on phones)
   const handleTasbeehClick = () => {
     const next = tasbeehCount + 1;
     setTasbeehCount(next);
     setTotalDailyTasbeeh((prev) => prev + 1);
 
     if (tasbeehTarget > 0 && next % tasbeehTarget === 0) {
-      if (soundEnabled) audioEngine.playTasbeehFinish(0.75);
       triggerHaptic('success');
     } else {
-      if (soundEnabled) audioEngine.playTasbeehClick(0.45);
       triggerHaptic('light');
     }
   };
@@ -760,36 +759,22 @@ export const AdhkarModal: React.FC<AdhkarModalProps> = ({
               <span>انتقال تلقائي باللمس: {autoAdvance ? 'مفعل' : 'معطل'}</span>
             </button>
 
-            {/* Sound & Vibration */}
+            {/* Phone Haptic Vibration (Replacement for Sound) */}
             <div className="flex items-center gap-1.5">
               <button
                 type="button"
-                onClick={() => setSoundEnabled(!soundEnabled)}
-                className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
-                  soundEnabled
-                    ? 'bg-amber-400/20 border-amber-400/30 text-amber-300'
-                    : 'bg-white/5 border-white/10 text-slate-400'
-                }`}
-                title="صوت النقر"
-              >
-                {soundEnabled ? (
-                  <Volume2 className="w-3.5 h-3.5" />
-                ) : (
-                  <VolumeX className="w-3.5 h-3.5" />
-                )}
-              </button>
-
-              <button
-                type="button"
                 onClick={() => setVibrationEnabled(!vibrationEnabled)}
-                className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all cursor-pointer ${
                   vibrationEnabled
-                    ? 'bg-emerald-400/20 border-emerald-400/30 text-emerald-300'
+                    ? 'bg-emerald-400/20 border-emerald-400/30 text-emerald-300 shadow-sm shadow-emerald-400/20'
                     : 'bg-white/5 border-white/10 text-slate-400'
                 }`}
-                title="اهتزاز اللمس"
+                title="اهتزاز الهاتف كبديل للصوت عند النقر والانتقال"
               >
                 <Smartphone className="w-3.5 h-3.5" />
+                <span className="text-[11px] font-tajawal font-bold">
+                  اهتزاز الهاتف (بديل الصوت): {vibrationEnabled ? 'مفعل' : 'معطل'}
+                </span>
               </button>
 
               <button
@@ -1116,12 +1101,8 @@ export const AdhkarModal: React.FC<AdhkarModalProps> = ({
             >
               {currentDhikr && (
                 <div
-                  className={`flex-1 flex flex-col justify-between px-4 sm:px-8 py-3 transition-transform duration-200 ease-out ${
-                    slideDirection === 'next'
-                      ? '-translate-x-full opacity-0'
-                      : slideDirection === 'prev'
-                      ? 'translate-x-full opacity-0'
-                      : 'translate-x-0 opacity-100'
+                  className={`flex-1 flex flex-col justify-between px-4 sm:px-8 py-3 transition-transform duration-150 ease-out ${
+                    isVibrating ? 'animate-vibrate' : ''
                   }`}
                   style={{
                     transform:

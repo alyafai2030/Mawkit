@@ -6,6 +6,7 @@ interface MiddleSectionProps {
   countdownLabel: string;
   sunriseTime: string;
   duhaTime: string;
+  lastThirdTime?: string;
   useArabicDigits: boolean;
   onCountdownClick: () => void;
 }
@@ -15,6 +16,7 @@ export const MiddleSection: React.FC<MiddleSectionProps> = ({
   countdownLabel,
   sunriseTime,
   duhaTime,
+  lastThirdTime,
   useArabicDigits,
   onCountdownClick,
 }) => {
@@ -89,7 +91,7 @@ export const MiddleSection: React.FC<MiddleSectionProps> = ({
         </div>
       </div>
 
-      {/* Right: Sunrise & Duha */}
+      {/* Right: Sunrise & Duha & Last Third */}
       <div className="flex flex-col items-center justify-center text-center">
         <div className="flex items-center gap-1 font-amiri text-xl sm:text-2xl font-bold text-[#f5d79e]">
           <span>الشروق</span>
@@ -97,12 +99,19 @@ export const MiddleSection: React.FC<MiddleSectionProps> = ({
             {formatDigits(sunriseTime, useArabicDigits)}
           </span>
         </div>
-        <span
-          id="time-duha"
-          className="font-numbers text-xs sm:text-sm font-semibold text-slate-300/90 mt-0.5"
-        >
-          {formatDigits(duhaTime, useArabicDigits)}
-        </span>
+        <div className="flex items-center justify-center gap-2 mt-0.5 text-xs sm:text-sm font-semibold text-slate-300/90 font-numbers flex-wrap">
+          <span id="time-duha" title="وقت صلاة الضحى">
+            الضحى: {formatDigits(duhaTime, useArabicDigits)}
+          </span>
+          {lastThirdTime && (
+            <>
+              <span className="text-amber-400/50 hidden sm:inline">•</span>
+              <span id="time-last-third" title="الثلث الأخير من الليل (التقويم البحريني)" className="text-amber-300/90 font-bold">
+                الثلث الأخير: {formatDigits(lastThirdTime, useArabicDigits)}
+              </span>
+            </>
+          )}
+        </div>
       </div>
     </section>
   );

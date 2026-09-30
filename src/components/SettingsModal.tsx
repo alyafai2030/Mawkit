@@ -377,17 +377,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       </span>
                     </div>
                     <p className="text-emerald-100/80 leading-relaxed font-tajawal">
-                      يتم احتساب مواقيت الصلوات بدقة فلكية متطابقة مع معيار <span className="font-mono text-amber-300">bh.manama.awqaf</span> ووثيقة روزنامة الزبارة والبحرين الرسمية الصادرة عن المجلس الأعلى للشؤون الإسلامية، بالمعيار المزدوج لموقعي المملكة (دلمونيا بالمحرق للفجر والشروق، ومدينة سلمان لبقية الصلوات، وزاوية 18° للعشاء).
+                      يتم احتساب مواقيت الصلوات بدقة فلكية متطابقة مع معيار <span className="font-mono text-amber-300">bh.manama.awqaf</span> ووثيقة كتاب التقويم البحريني السنوي 1448 هـ / 2026م الصادرة عن المجلس الأعلى للشؤون الإسلامية (اللجنة العليا للتقويم البحريني)، بالمعيار المزدوج لموقعي المملكة (دلمونيا بالمحرق للفجر والشروق، ومدينة سلمان للظهر والعصر والمغرب والعشاء، مع حساب الثلث الأخير من الليل).
                     </p>
-                    <div className="pt-1">
+                    <div className="pt-1 flex flex-wrap gap-3">
                       <a
-                        href="https://www.almajles.gov.bh/MediaManager/Media/Documents/taqweem1448/taqweem/CalendarDaily1448Final.pdf"
+                        href="https://www.almajles.gov.bh/MediaManager/Media/Documents/taqweem1448/CalendarBook1448Final-2026.pdf"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 text-amber-300 hover:text-amber-200 underline font-medium text-[11px] transition-colors"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
-                        <span>فتح وثيقة التقويم اليومي الرسمي لعام 1448 هـ (CalendarDaily1448Final.pdf)</span>
+                        <span>كتاب التقويم البحريني السنوي 1448 هـ (CalendarBook1448Final-2026.pdf)</span>
                       </a>
                     </div>
                   </div>

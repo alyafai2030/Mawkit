@@ -9,6 +9,8 @@ export interface PrayerTimes {
   maghrib: string;
   isha: string;
   tomorrowFajr: string;
+  lastThird?: string;
+  midnight?: string;
 }
 
 export interface PrayerItem {

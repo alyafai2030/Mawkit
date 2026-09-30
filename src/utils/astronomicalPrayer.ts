@@ -186,6 +186,13 @@ export function calculateAstronomicalTimes(
   const fajrTomHAngle = hourAngle(-params.fajrAngle, latitude, sunTom.dec) ?? 1.5;
   const tomorrowFajrH = dhuhrTomH - fajrTomHAngle;
 
+  // Last Third of Night & Midnight (Islamic Sharia calculation)
+  const maghribSec = timeToSeconds(hoursToTimeStr(maghribH));
+  const tomFajrSec = timeToSeconds(hoursToTimeStr(tomorrowFajrH));
+  const nightDurationSec = 24 * 3600 - maghribSec + tomFajrSec;
+  const lastThirdSec = (maghribSec + Math.round(nightDurationSec * (2 / 3))) % (24 * 3600);
+  const midnightSec = (maghribSec + Math.round(nightDurationSec / 2)) % (24 * 3600);
+
   return {
     fajr: hoursToTimeStr(fajrH),
     sunrise: hoursToTimeStr(sunriseH),
@@ -195,6 +202,8 @@ export function calculateAstronomicalTimes(
     maghrib: hoursToTimeStr(maghribH),
     isha: hoursToTimeStr(ishaH),
     tomorrowFajr: hoursToTimeStr(tomorrowFajrH),
+    lastThird: `${pad(Math.floor(lastThirdSec / 3600))}:${pad(Math.floor((lastThirdSec % 3600) / 60))}`,
+    midnight: `${pad(Math.floor(midnightSec / 3600))}:${pad(Math.floor((midnightSec % 3600) / 60))}`,
   };
 }
 

@@ -151,7 +151,27 @@ export default function App() {
           const duhaSec = sunriseSec + 15 * 60;
           const duha = `${pad(Math.floor(duhaSec / 3600))}:${pad(Math.floor((duhaSec % 3600) / 60))}`;
 
-          return { fajr, sunrise, duha, dhuhr, asr, maghrib, isha, tomorrowFajr };
+          // Last Third & Midnight according to Bahrain Calendar
+          const maghribSec = timeToSeconds(maghrib);
+          const tomFajrSec = timeToSeconds(tomorrowFajr);
+          const nightDurationSec = 24 * 3600 - maghribSec + tomFajrSec;
+          const lastThirdSec = (maghribSec + Math.round(nightDurationSec * (2 / 3))) % (24 * 3600);
+          const midnightSec = (maghribSec + Math.round(nightDurationSec / 2)) % (24 * 3600);
+          const lastThird = `${pad(Math.floor(lastThirdSec / 3600))}:${pad(Math.floor((lastThirdSec % 3600) / 60))}`;
+          const midnight = `${pad(Math.floor(midnightSec / 3600))}:${pad(Math.floor((midnightSec % 3600) / 60))}`;
+
+          return {
+            fajr,
+            sunrise,
+            duha,
+            dhuhr,
+            asr,
+            maghrib,
+            isha,
+            tomorrowFajr,
+            lastThird,
+            midnight,
+          };
         }
       }
 
@@ -245,6 +265,16 @@ export default function App() {
     settings.is12h
   ).timeStr;
 
+  // Last Third of the Night formatted (from Bahrain official calendar)
+  const lastThirdSec = prayerTimes.lastThird ? timeToSeconds(prayerTimes.lastThird) : 0;
+  const lastThirdFmt = prayerTimes.lastThird
+    ? formatTimeDisplay(
+        Math.floor(lastThirdSec / 3600),
+        Math.floor((lastThirdSec % 3600) / 60),
+        settings.is12h
+      ).timeStr
+    : undefined;
+
   // 5 Prayers mapping
   const prayerConfigs: { key: PrayerKey; name: string; raw: string }[] = [
     { key: 'Fajr', name: 'الفجر', raw: prayerTimes.fajr },
@@ -289,19 +319,28 @@ export default function App() {
       activeRemainingSec = iqamaSec - curSec;
       activeTotalSec = iqamaMin * 60;
 
-      // Check if Adhan sound should be triggered (window within 0 to 2s to prevent skips)
+      // Check if Adhan should be triggered (window within 0 to 2s to prevent skips)
       if (
-        settings.soundActive &&
         lastTriggeredAdhanKeyRef.current !== p.key &&
         curSec >= adhanSec &&
         curSec <= adhanSec + 2
       ) {
         lastTriggeredAdhanKeyRef.current = p.key;
-        audioEngine.playAdhan(
-          settings.adhanVoice || 'adhan_daghreeri',
-          settings.audioVolume,
-          p.key === 'Fajr' && settings.adhanFajrSpecial
-        );
+
+        // Vibrate phone for prayer alert
+        if (typeof navigator !== 'undefined' && navigator.vibrate) {
+          try {
+            navigator.vibrate([500, 250, 500, 250, 500]);
+          } catch {}
+        }
+
+        if (settings.soundActive) {
+          audioEngine.playAdhan(
+            settings.adhanVoice || 'adhan_daghreeri',
+            settings.audioVolume,
+            p.key === 'Fajr' && settings.adhanFajrSpecial
+          );
+        }
       }
     }
 
@@ -339,6 +378,14 @@ export default function App() {
       // Check if Iqama timer finished
       if (activeRemainingSec <= 0) {
         setIsIqamaModalOpen(false);
+
+        // Vibrate phone on Iqama completion
+        if (typeof navigator !== 'undefined' && navigator.vibrate) {
+          try {
+            navigator.vibrate([400, 200, 400]);
+          } catch {}
+        }
+
         if (settings.soundActive) {
           audioEngine.playIqamaSynthesis(settings.audioVolume);
         }
@@ -518,6 +565,7 @@ export default function App() {
           countdownLabel={countdownLabelStr}
           sunriseTime={sunriseFmt}
           duhaTime={duhaFmt}
+          lastThirdTime={lastThirdFmt}
           useArabicDigits={settings.arabicDigits}
           onCountdownClick={() => {
             if (activeIqamaPrayer) {
