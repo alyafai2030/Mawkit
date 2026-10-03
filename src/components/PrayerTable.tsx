@@ -15,14 +15,32 @@ export interface PrayerCardData {
 interface PrayerTableProps {
   prayers: PrayerCardData[];
   useArabicDigits: boolean;
+  onOpenAdjustments?: () => void;
 }
 
-export const PrayerTable: React.FC<PrayerTableProps> = ({ prayers, useArabicDigits }) => {
+export const PrayerTable: React.FC<PrayerTableProps> = ({
+  prayers,
+  useArabicDigits,
+  onOpenAdjustments,
+}) => {
   return (
     <section className="w-full my-1 select-none">
       {/* Table Column Headers: الإقامة (Left) | الآذان (Center) | الصلاة (Right) */}
-      <div className="grid grid-cols-3 items-center text-center px-6 py-1.5 font-amiri text-lg sm:text-xl font-bold text-[#f5d79e]">
-        <span className="text-left pr-2">الإقامة</span>
+      <div
+        onClick={onOpenAdjustments}
+        className={`grid grid-cols-3 items-center text-center px-6 py-1.5 font-amiri text-lg sm:text-xl font-bold text-[#f5d79e] ${
+          onOpenAdjustments ? 'cursor-pointer hover:opacity-90 active:scale-[0.99] transition-all group' : ''
+        }`}
+        title={onOpenAdjustments ? 'انقر لفتح لوحة ضبط أوقات الصلاة والإقامة الموحدة' : undefined}
+      >
+        <span className="text-left pr-2 flex items-center gap-1.5">
+          <span>الإقامة</span>
+          {onOpenAdjustments && (
+            <span className="text-[10px] text-amber-300/80 font-tajawal font-normal opacity-70 group-hover:opacity-100 transition-opacity">
+              ⚙️ ضبط
+            </span>
+          )}
+        </span>
         <span>الآذان</span>
         <span className="text-right pl-2">الصلاة</span>
       </div>

@@ -4,6 +4,7 @@ import {
   CalcMethodId,
   AsrJuristic,
   PrayerKey,
+  PrayerTimes,
 } from '../types';
 import { WORLD_COUNTRIES, getHijriDate } from '../utils/astronomicalPrayer';
 import { THEMES, ARABESQUE_DATA_URI } from '../data/themes';
@@ -24,7 +25,82 @@ import {
   CheckCircle2,
   ExternalLink,
   BookOpen,
+  Plus,
+  Minus,
+  RotateCcw,
+  SlidersHorizontal,
+  Timer,
+  Check,
+  Sparkles,
 } from 'lucide-react';
+
+// Helper to calculate effective time string given base time "HH:MM" and offset minutes
+export function adjustTimeStr(baseTime: string | undefined, offsetMin: number): string {
+  if (!baseTime || baseTime === '--:--') return '--:--';
+  const parts = baseTime.split(':');
+  if (parts.length < 2) return baseTime;
+  const h = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10);
+  if (isNaN(h) || isNaN(m)) return baseTime;
+  let totalMin = h * 60 + m + offsetMin;
+  while (totalMin < 0) totalMin += 1440;
+  totalMin = totalMin % 1440;
+  const resH = Math.floor(totalMin / 60);
+  const resM = totalMin % 60;
+  return `${resH < 10 ? '0' : ''}${resH}:${resM < 10 ? '0' : ''}${resM}`;
+}
+
+export interface PrayerAdjustConfig {
+  key: PrayerKey;
+  name: string;
+  icon: string;
+  defaultIqama: number;
+  timeKey: keyof PrayerTimes;
+  description: string;
+}
+
+export const PRAYER_ADJUST_CONFIGS: PrayerAdjustConfig[] = [
+  {
+    key: 'Fajr',
+    name: 'الفجر',
+    icon: '🌅',
+    defaultIqama: 20,
+    timeKey: 'fajr',
+    description: 'صلاة الصبح ودخول الفجر الصادق',
+  },
+  {
+    key: 'Dhuhr',
+    name: 'الظهر',
+    icon: '☀️',
+    defaultIqama: 20,
+    timeKey: 'dhuhr',
+    description: 'زوال الشمس عن كبد السماء',
+  },
+  {
+    key: 'Asr',
+    name: 'العصر',
+    icon: '🌤️',
+    defaultIqama: 25,
+    timeKey: 'asr',
+    description: 'مصير ظل كل شيء مثله',
+  },
+  {
+    key: 'Maghrib',
+    name: 'المغرب',
+    icon: '🌇',
+    defaultIqama: 10,
+    timeKey: 'maghrib',
+    description: 'غروب كامل قرص الشمس',
+  },
+  {
+    key: 'Isha',
+    name: 'العشاء',
+    icon: '🌙',
+    defaultIqama: 20,
+    timeKey: 'isha',
+    description: 'مغيب الشفق الأحمر بالكامل',
+  },
+];
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -38,6 +114,7 @@ interface SettingsModalProps {
   onTriggerBlackScreenTest: () => void;
   onToggleFullscreen: () => void;
   onOpenAdhkar?: () => void;
+  prayerTimes?: PrayerTimes;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -52,6 +129,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onTriggerBlackScreenTest,
   onToggleFullscreen,
   onOpenAdhkar,
+  prayerTimes,
 }) => {
   const [gpsStatus, setGpsStatus] = useState<string>('');
   const [isPlayingAdhan, setIsPlayingAdhan] = useState(false);
@@ -152,12 +230,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   const tabs = [
+    { id: 'adjustments', label: 'لوحة الأوقات والإقامة', icon: SlidersHorizontal },
     { id: 'location', label: 'الدولة والمدينة', icon: MapPin },
     { id: 'adhkar', label: 'الأذكار والتسابيح', icon: BookOpen },
     { id: 'audio', label: 'صوت الأذان والإقامة', icon: Volume2 },
     { id: 'themes', label: 'الثيمات (18)', icon: Palette },
     { id: 'options', label: 'الخيارات العامة', icon: Settings },
-    { id: 'adjustments', label: 'ضبط الأوقات والإقامة', icon: Clock },
     { id: 'hijri', label: 'التاريخ الهجري', icon: Moon },
     { id: 'blackscreen', label: 'الشاشة السوداء', icon: Smartphone },
   ];
@@ -719,59 +797,373 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           )}
 
-          {/* TAB 5: ADJUSTMENTS */}
+          {/* TAB: UNIFIED PRAYER & IQAMA ADJUSTMENTS BOARD */}
           {activeTab === 'adjustments' && (
-            <div id="tab-adjustments" className="space-y-4">
-              <h3 className="font-bold text-amber-300 border-b border-white/10 pb-2">
-                تعديل دقائق الأذان والإقامة
-              </h3>
-              <div className="space-y-2">
-                <div className="grid grid-cols-3 gap-2 font-bold text-xs text-slate-400 border-b border-white/10 pb-1">
-                  <span>الصلاة</span>
-                  <span>تعديل الأذان (دقيقة)</span>
-                  <span>وقت انتظار الإقامة (دقيقة)</span>
+            <div id="tab-adjustments" className="space-y-5">
+              {/* Header and Quick Actions */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="p-1.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-400/30">
+                      <SlidersHorizontal className="w-4 h-4" />
+                    </span>
+                    <h3 className="font-bold text-amber-300 text-base">
+                      لوحة ضبط أوقات الصلاة والإقامة الموحدة
+                    </h3>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1">
+                    تحكم دقيق وفوري في تقديم أو تأخير أوقات الأذان بالدقائق (+ أو -) وتحديد مدة انتظار الإقامة لكل صلاة مع المعاينة الحية.
+                  </p>
                 </div>
 
-                {(['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'] as PrayerKey[]).map((key) => {
-                  const names: Record<PrayerKey, string> = {
-                    Fajr: 'الفجر',
-                    Dhuhr: 'الظهر',
-                    Asr: 'العصر',
-                    Maghrib: 'المغرب',
-                    Isha: 'العشاء',
-                  };
+                {/* Quick Presets Toolbar */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onUpdateSettings({
+                        offsets: { Fajr: 0, Dhuhr: 0, Asr: 0, Maghrib: 0, Isha: 0 },
+                      })
+                    }
+                    className="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 border border-white/15 text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+                    title="إعادة جميع فروق الأذان إلى الصفر (مطابق للتقويم)"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 text-amber-300" />
+                    <span>تصفير فروق الأذان (0د)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onUpdateSettings({
+                        iqama: { Fajr: 20, Dhuhr: 20, Asr: 25, Maghrib: 10, Isha: 20 },
+                      })
+                    }
+                    className="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 border border-white/15 text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+                    title="استعادة مدد الإقامة الافتراضية المعتمدة"
+                  >
+                    <Timer className="w-3.5 h-3.5 text-emerald-300" />
+                    <span>استعادة الإقامة الافتراضية</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={onTriggerIqamaTest}
+                    className="px-2.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/30 text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+                  >
+                    <span>تجربة عداد الإقامة ⏱️</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 5 Prayer Cards: Unified Stations */}
+              <div className="space-y-3.5">
+                {PRAYER_ADJUST_CONFIGS.map((item) => {
+                  const baseAdhan = prayerTimes ? (prayerTimes[item.timeKey] as string) || '--:--' : '--:--';
+                  const offset = settings.offsets[item.key] ?? 0;
+                  const iqamaDuration = settings.iqama[item.key] ?? item.defaultIqama;
+                  const finalAdhan = adjustTimeStr(baseAdhan, offset);
+                  const finalIqama = adjustTimeStr(finalAdhan, iqamaDuration);
+
                   return (
-                    <div key={key} className="grid grid-cols-3 gap-2 items-center bg-white/5 p-2.5 rounded-xl">
-                      <span className="font-bold text-amber-200">{names[key]}</span>
-                      <input
-                        type="number"
-                        min="-30"
-                        max="30"
-                        value={settings.offsets[key]}
-                        onChange={(e) => {
-                          const val = parseInt(e.target.value, 10) || 0;
-                          onUpdateSettings({
-                            offsets: { ...settings.offsets, [key]: val },
-                          });
-                        }}
-                        className="bg-black/50 border border-white/20 rounded-lg px-2 py-1 text-center w-24 text-white"
-                      />
-                      <input
-                        type="number"
-                        min="5"
-                        max="60"
-                        value={settings.iqama[key]}
-                        onChange={(e) => {
-                          const val = parseInt(e.target.value, 10) || 20;
-                          onUpdateSettings({
-                            iqama: { ...settings.iqama, [key]: val },
-                          });
-                        }}
-                        className="bg-black/50 border border-white/20 rounded-lg px-2 py-1 text-center w-24 text-white"
-                      />
+                    <div
+                      key={item.key}
+                      className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-b from-stone-900/90 to-stone-950/90 border border-white/10 hover:border-amber-400/30 transition-all shadow-md space-y-3"
+                    >
+                      {/* Prayer Header & Live Times Banner */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-2.5">
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-xl sm:text-2xl p-1.5 rounded-xl bg-black/40 border border-white/10">
+                            {item.icon}
+                          </span>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-amiri font-bold text-lg text-amber-200">
+                                صلاة {item.name}
+                              </h4>
+                              <span className="text-[11px] text-slate-400 hidden sm:inline font-tajawal">
+                                ({item.description})
+                              </span>
+                            </div>
+                            <div className="text-[11px] text-slate-400 font-numbers flex items-center gap-1.5 mt-0.5">
+                              <span>وقت التقويم الأصلي:</span>
+                              <span className="text-slate-200 font-bold">{baseAdhan}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Live Calculated Times Display */}
+                        <div className="flex items-center gap-2 self-end sm:self-center">
+                          {/* Final Adhan Time */}
+                          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/15 border border-amber-400/30">
+                            <span className="text-[11px] text-amber-200/90 font-medium">الأذان:</span>
+                            <span className="font-numbers text-base font-extrabold text-amber-300">
+                              {finalAdhan}
+                            </span>
+                          </div>
+
+                          {/* Final Iqama Time */}
+                          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-500/15 border border-emerald-400/30">
+                            <span className="text-[11px] text-emerald-200/90 font-medium">الإقامة:</span>
+                            <span className="font-numbers text-base font-extrabold text-emerald-300">
+                              {finalIqama}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Controls Grid: Adhan Offset (Right) & Iqama Duration (Left) */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
+                        {/* 1. Adhan Offset Controls */}
+                        <div className="p-3 rounded-xl bg-black/40 border border-white/10 space-y-2">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-semibold text-slate-200 flex items-center gap-1.5">
+                              <Clock className="w-3.5 h-3.5 text-amber-400" />
+                              <span>تقديم أو تأخير الأذان:</span>
+                            </span>
+                            <span
+                              className={`font-numbers text-xs font-bold px-2 py-0.5 rounded-lg border ${
+                                offset > 0
+                                  ? 'bg-amber-500/20 text-amber-300 border-amber-400/30'
+                                  : offset < 0
+                                  ? 'bg-sky-500/20 text-sky-300 border-sky-400/30'
+                                  : 'bg-white/5 text-slate-300 border-white/10'
+                              }`}
+                            >
+                              {offset > 0 ? `+${offset} دقيقة (تأخير)` : offset < 0 ? `${offset} دقيقة (تقديم)` : '0 دقيقة (مطابق)'}
+                            </span>
+                          </div>
+
+                          {/* Stepper with - and + */}
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newVal = Math.max(-30, offset - 1);
+                                onUpdateSettings({
+                                  offsets: { ...settings.offsets, [item.key]: newVal },
+                                });
+                              }}
+                              className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-slate-100 flex items-center justify-center font-bold text-lg transition-all cursor-pointer border border-white/10"
+                              title="تقديم الأذان دقيقة (-1)"
+                            >
+                              <Minus className="w-4 h-4" />
+                            </button>
+
+                            <input
+                              type="number"
+                              min="-30"
+                              max="30"
+                              value={offset}
+                              onChange={(e) => {
+                                const val = parseInt(e.target.value, 10);
+                                onUpdateSettings({
+                                  offsets: {
+                                    ...settings.offsets,
+                                    [item.key]: isNaN(val) ? 0 : Math.max(-30, Math.min(30, val)),
+                                  },
+                                });
+                              }}
+                              className="flex-1 bg-stone-900 border border-white/20 focus:border-amber-400 rounded-xl px-2 py-1.5 text-center font-numbers text-sm font-bold text-white outline-none"
+                            />
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newVal = Math.min(30, offset + 1);
+                                onUpdateSettings({
+                                  offsets: { ...settings.offsets, [item.key]: newVal },
+                                });
+                              }}
+                              className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-slate-100 flex items-center justify-center font-bold text-lg transition-all cursor-pointer border border-white/10"
+                              title="تأخير الأذان دقيقة (+1)"
+                            >
+                              <Plus className="w-4 h-4" />
+                            </button>
+                          </div>
+
+                          {/* Quick Offset Pills */}
+                          <div className="flex items-center justify-center gap-1.5 pt-0.5">
+                            {[-2, -1, 0, 1, 2].map((presetVal) => {
+                              const isSelected = offset === presetVal;
+                              return (
+                                <button
+                                  key={presetVal}
+                                  type="button"
+                                  onClick={() =>
+                                    onUpdateSettings({
+                                      offsets: { ...settings.offsets, [item.key]: presetVal },
+                                    })
+                                  }
+                                  className={`px-2 py-0.5 rounded-lg text-xs font-numbers font-medium transition-all cursor-pointer ${
+                                    isSelected
+                                      ? 'bg-amber-400 text-stone-950 font-bold shadow-sm'
+                                      : 'bg-white/5 hover:bg-white/15 text-slate-300 border border-white/10'
+                                  }`}
+                                >
+                                  {presetVal > 0 ? `+${presetVal}` : presetVal}د
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* 2. Iqama Duration Controls */}
+                        <div className="p-3 rounded-xl bg-black/40 border border-white/10 space-y-2">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-semibold text-slate-200 flex items-center gap-1.5">
+                              <Timer className="w-3.5 h-3.5 text-emerald-400" />
+                              <span>وقت انتظار الإقامة:</span>
+                            </span>
+                            <span className="font-numbers text-xs font-bold text-emerald-300 px-2 py-0.5 rounded-lg bg-emerald-500/20 border border-emerald-400/30">
+                              {iqamaDuration} دقيقة
+                            </span>
+                          </div>
+
+                          {/* Stepper with - and + */}
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newVal = Math.max(5, iqamaDuration - 1);
+                                onUpdateSettings({
+                                  iqama: { ...settings.iqama, [item.key]: newVal },
+                                });
+                              }}
+                              className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-slate-100 flex items-center justify-center font-bold text-lg transition-all cursor-pointer border border-white/10"
+                              title="تقليل وقت انتظار الإقامة دقيقة (-1)"
+                            >
+                              <Minus className="w-4 h-4" />
+                            </button>
+
+                            <input
+                              type="number"
+                              min="5"
+                              max="60"
+                              value={iqamaDuration}
+                              onChange={(e) => {
+                                const val = parseInt(e.target.value, 10);
+                                onUpdateSettings({
+                                  iqama: {
+                                    ...settings.iqama,
+                                    [item.key]: isNaN(val) ? 20 : Math.max(5, Math.min(60, val)),
+                                  },
+                                });
+                              }}
+                              className="flex-1 bg-stone-900 border border-white/20 focus:border-emerald-400 rounded-xl px-2 py-1.5 text-center font-numbers text-sm font-bold text-white outline-none"
+                            />
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newVal = Math.min(60, iqamaDuration + 1);
+                                onUpdateSettings({
+                                  iqama: { ...settings.iqama, [item.key]: newVal },
+                                });
+                              }}
+                              className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-slate-100 flex items-center justify-center font-bold text-lg transition-all cursor-pointer border border-white/10"
+                              title="زيادة وقت انتظار الإقامة دقيقة (+1)"
+                            >
+                              <Plus className="w-4 h-4" />
+                            </button>
+                          </div>
+
+                          {/* Quick Duration Preset Pills */}
+                          <div className="flex items-center justify-center gap-1.5 pt-0.5">
+                            {[10, 15, 20, 25, 30].map((presetMin) => {
+                              const isSelected = iqamaDuration === presetMin;
+                              return (
+                                <button
+                                  key={presetMin}
+                                  type="button"
+                                  onClick={() =>
+                                    onUpdateSettings({
+                                      iqama: { ...settings.iqama, [item.key]: presetMin },
+                                    })
+                                  }
+                                  className={`px-2 py-0.5 rounded-lg text-xs font-numbers font-medium transition-all cursor-pointer ${
+                                    isSelected
+                                      ? 'bg-emerald-400 text-stone-950 font-bold shadow-sm'
+                                      : 'bg-white/5 hover:bg-white/15 text-slate-300 border border-white/10'
+                                  }`}
+                                >
+                                  {presetMin}د
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   );
                 })}
+              </div>
+
+              {/* Live Summary Matrix Table */}
+              <div className="p-4 rounded-2xl bg-black/50 border border-white/10 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-amber-200 text-sm flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-amber-400" />
+                    <span>جدول الأوقات المعتمدة النهائي لليوم</span>
+                  </h4>
+                  <span className="text-[11px] text-slate-400">معاينة شاملة متزامنة</span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-center text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-white/10 text-slate-400 font-tajawal">
+                        <th className="py-2 px-2 text-right">الصلاة</th>
+                        <th className="py-2 px-2">وقت التقويم</th>
+                        <th className="py-2 px-2">تعديل الأذان</th>
+                        <th className="py-2 px-2 text-amber-300 font-bold">أذان المسجد</th>
+                        <th className="py-2 px-2">مدة الإقامة</th>
+                        <th className="py-2 px-2 text-emerald-300 font-bold">موعد الإقامة</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5 font-numbers">
+                      {PRAYER_ADJUST_CONFIGS.map((item) => {
+                        const baseAdhan = prayerTimes ? (prayerTimes[item.timeKey] as string) || '--:--' : '--:--';
+                        const offset = settings.offsets[item.key] ?? 0;
+                        const iqamaDuration = settings.iqama[item.key] ?? item.defaultIqama;
+                        const finalAdhan = adjustTimeStr(baseAdhan, offset);
+                        const finalIqama = adjustTimeStr(finalAdhan, iqamaDuration);
+
+                        return (
+                          <tr key={item.key} className="hover:bg-white/5 transition-colors">
+                            <td className="py-2 px-2 text-right font-amiri font-bold text-sm text-slate-200">
+                              {item.icon} {item.name}
+                            </td>
+                            <td className="py-2 px-2 text-slate-400">{baseAdhan}</td>
+                            <td className="py-2 px-2">
+                              {offset === 0 ? (
+                                <span className="text-slate-400">0د</span>
+                              ) : offset > 0 ? (
+                                <span className="text-amber-400 font-bold">+{offset}د</span>
+                              ) : (
+                                <span className="text-sky-400 font-bold">{offset}د</span>
+                              )}
+                            </td>
+                            <td className="py-2 px-2 text-amber-300 font-bold text-sm bg-amber-500/10 rounded-lg">
+                              {finalAdhan}
+                            </td>
+                            <td className="py-2 px-2 text-slate-300">{iqamaDuration} دقيقة</td>
+                            <td className="py-2 px-2 text-emerald-300 font-bold text-sm bg-emerald-500/10 rounded-lg">
+                              {finalIqama}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="flex items-center gap-2 pt-2 border-t border-white/10 text-slate-300 text-xs font-tajawal">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>
+                    جميع التعديلات يتم حفظها تلقائياً على جهازك وتنعكس فوراً على الشاشة الكبيرة وساعة المسجد، التنبيه الصوتي، واهتزاز الهاتف.
+                  </span>
+                </div>
               </div>
             </div>
           )}

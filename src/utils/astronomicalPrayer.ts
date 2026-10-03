@@ -111,8 +111,8 @@ interface MethodParams {
 }
 
 const CALC_METHODS: Record<string, MethodParams> = {
-  bahrain: { fajrAngle: 18.0, ishaAngle: 17.7 },
-  'bh.manama.awqaf': { fajrAngle: 18.0, ishaAngle: 17.7 },
+  bahrain: { fajrAngle: 18.0, ishaAngle: 17.5 },
+  'bh.manama.awqaf': { fajrAngle: 18.0, ishaAngle: 17.5 },
   makkah: { fajrAngle: 18.5, ishaAngle: 0, ishaIntervalMinutes: 90 },
   egypt: { fajrAngle: 19.5, ishaAngle: 17.5 },
   karachi: { fajrAngle: 18.0, ishaAngle: 18.0 },

@@ -576,7 +576,14 @@ export default function App() {
         />
 
         {/* D. Prayer Times Stadium Capsules Table */}
-        <PrayerTable prayers={prayersTableData} useArabicDigits={settings.arabicDigits} />
+        <PrayerTable
+          prayers={prayersTableData}
+          useArabicDigits={settings.arabicDigits}
+          onOpenAdjustments={() => {
+            setActiveSettingsTab('adjustments');
+            setIsSettingsOpen(true);
+          }}
+        />
 
         {/* F. Subtle Footer */}
         <footer className="w-full flex items-center justify-between text-xs font-amiri text-[#fae084]/80 px-2 pt-2 select-none">
@@ -654,6 +661,7 @@ export default function App() {
         isOpen={isSettingsOpen}
         settings={settings}
         activeTab={activeSettingsTab}
+        prayerTimes={prayerTimes}
         onClose={() => setIsSettingsOpen(false)}
         onTabChange={(tab) => setActiveSettingsTab(tab)}
         onUpdateSettings={updateSettings}
